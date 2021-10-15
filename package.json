@@ -1,0 +1,30 @@
+{
+  "name": "kafka-magic-serializer-protobuf",
+  "version": "1.0.0",
+  "description": "Protobuf custom serializer for Kafka Magic",
+  "main": "index.js",
+  "scripts": {
+    "build": "./node_modules/.bin/esbuild ./src/main.js --bundle --minify --platform=node --outfile=./dist/main.js",
+    "pretest": "npm run build",
+    "test": "ts-node node_modules/jasmine/bin/jasmine --config=jasmine.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kafka-magic/serializer-protobuf"
+  },
+  "author": "Digitsy Inc",
+  "license": "MIT",
+  "dependencies": {
+    "protocol-buffers": "^4.2.0"
+  },
+  "devDependencies": {
+    "@types/jasmine": "^3.9.1",
+    "@types/node": "^16.10.2",
+    "esbuild": "^0.13.4",
+    "esbuild-node-externals": "^1.3.0",
+    "jasmine": "^3.9.0",
+    "jasmine-spec-reporter": "^7.0.0",
+    "ts-node": "^10.3.0",
+    "typescript": "^4.4.3"
+  }
+}
