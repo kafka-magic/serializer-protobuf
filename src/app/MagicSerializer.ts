@@ -6,5 +6,5 @@ import { ContextJson } from "./ContextJson";
  */
 export interface MagicSerializer {
     serializeToBytes(context: ContextJson, schema: string): ContextBytes;
-    deserializeToJson(context: ContextBytes, getSchema: GetSchemaCallback): ContextJson;
+    deserializeToObject(context: ContextBytes, getSchema: GetSchemaCallback): ContextJson;
 }

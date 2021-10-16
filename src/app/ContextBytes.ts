@@ -13,13 +13,13 @@ export interface ContextBytes {
      * Message Key
      * @returns array of bytes
      */
-    Key: Buffer;
+    Key: number[];
 
     /**
      * original message value
      * @returns byte array
      */
-    Message: Buffer;
+    Message: number[];
 
     /**
      * Headers dictionary

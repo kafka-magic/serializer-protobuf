@@ -1,11 +1,11 @@
 import "jasmine";
 import { ContextJson } from "../src/app/ContextJson";
-import { ProtobufSerializer } from "../dist/main";
+import { ProtobufSerializer } from "../dist/bundle";
 
 describe("CustomSerializer", () => {
     it("should serialize message to bytes and back", () => {
 
-        var proto = `message Test {
+        var proto = `message TestMessage {
 required float num  = 1;
 required string payload = 2;
 }`;

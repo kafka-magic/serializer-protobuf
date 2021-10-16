@@ -1,9 +1,11 @@
-import protobuf from 'protocol-buffers';
+import * as protobuf from "protobufjs";
+import { Buffer } from "buffer";
 
 import { ContextBytes, GetSchemaCallback } from "./app/ContextBytes";
 import { ContextJson } from "./app/ContextJson";
+import { MagicSerializer } from "./app/MagicSerializer";
 
-export class ProtobufSerializer {
+export class ProtobufSerializer implements MagicSerializer {
 
     serializeToBytes(context: ContextJson, schema: string): ContextBytes {
         if (!context) {
@@ -17,11 +19,11 @@ export class ProtobufSerializer {
         }
 
         const proto = this.getProtoObj(schema);
-        const protoBuffer = proto.encode(context.Message);
+        const protoBuffer = this.encodeToBuffer(context.Message, proto);
         let messageBuffer = this.combineIntoMessageBuffer(context.SchemaId, protoBuffer);
 
         let res: ContextBytes = {
-            Message: messageBuffer,
+            Message: this.toBytes(messageBuffer),
             Headers: context.Headers,
             Key: context.Key,
             Offset: context.Offset,
@@ -32,6 +34,24 @@ export class ProtobufSerializer {
         return res;
     }
 
+    private toBuffer(msg: number[]): Buffer {
+        var msgLength = msg.length;
+        var messageBuffer = Buffer.alloc(msgLength, 0);
+        for (var i = 0; i < msgLength; i++) {
+            messageBuffer.writeUInt8(msg[i], i);
+        }
+        return messageBuffer;
+    }
+
+    private toBytes(msg: Buffer): number[] {
+        var msgLength = msg.length;
+        var messageBuffer = [];
+        for (var i = 0; i < msgLength; i++) {
+            messageBuffer.push(msg[i]);
+        }
+        return messageBuffer;
+    }
+
     deserializeToObject(context: ContextBytes, getSchema: GetSchemaCallback): ContextJson {
         //TODO: add serializer cache for proto schemas
         let msgObj = null;
@@ -39,7 +59,7 @@ export class ProtobufSerializer {
         let schemaId: number;
         try {
             // get schema Id
-            const msgBuffer = context.Message;
+            const msgBuffer = this.toBuffer(context.Message);
             schemaId = msgBuffer.readInt32BE(1);
             // get schema using GetSchemaCallback
             const schema = getSchema(schemaId);
@@ -82,13 +102,20 @@ export class ProtobufSerializer {
     }
 
     private getProtoObj(schema: string): any {
-        const definedMessages = protobuf(schema);
-        let proto;
-        for (var msgProp in definedMessages) {
-            proto = definedMessages[msgProp]; // get first of defined
-            break;
+        const protoSchema = protobuf.parse(schema);
+        let protoObj;
+        for (var key in protoSchema.root.nested) {
+            if (!!key) {
+                protoObj = protoSchema.root.nested[key];
+                break;
+            }
         }
-        return proto;
+        return protoObj;
+    }
+
+    private encodeToBuffer(message: any, protoObj: any): Buffer {
+        var mb = protoObj.create(message);
+        return protoObj.encode(mb).finish();
     }
 
     private combineIntoMessageBuffer(schemaId: number, protoBuffer: Buffer): Buffer {
